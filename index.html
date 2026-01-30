@@ -14,8 +14,9 @@ h1{margin:0 0 20px;font-size:1.8rem;color:#ff4d88}
 p{margin:15px 0;font-size:1rem;color:#666}
 
 /* Enveloppe */
-.envelope{font-size:90px;margin:30px 0;cursor:pointer;display:inline-block;transition:transform 0.3s}
-.envelope:hover{transform:scale(1.1)}
+.envelope{font-size:90px;margin:30px 0;cursor:pointer;display:inline-block;transition:transform 0.3s;animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.1)}}
+.envelope:hover{animation:none;transform:scale(1.15)}
 
 /* Boutons */
 .buttons-container{display:flex;flex-direction:column;gap:15px;margin:30px 0}
@@ -63,16 +64,26 @@ p{margin:15px 0;font-size:1rem;color:#666}
 .confetti{position:fixed;width:10px;height:10px;opacity:0;top:-10px}
 @keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(360deg);opacity:0}}
 
+/* Volume control */
+.volume-control{position:fixed;top:15px;right:15px;z-index:1000;background:rgba(255,255,255,0.9);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,0.2)}
+.volume-btn{font-size:28px;cursor:pointer;background:none;border:none;padding:0;width:100%;height:100%}
+
 /* Responsive */
 @media (max-width: 480px){
     .card{padding:20px}
     h1{font-size:1.5rem}
     .button{padding:16px;font-size:1.2rem}
     .envelope{font-size:70px}
+    .volume-control{top:10px;right:10px;width:45px;height:45px}
 }
 </style>
 </head>
 <body>
+
+<!-- Contrôle volume -->
+<div class="volume-control">
+    <button class="volume-btn" id="volumeBtn">🔊</button>
+</div>
 
 <!-- Écran 1: Enveloppe -->
 <div class="card" id="screen1">
@@ -147,7 +158,7 @@ p{margin:15px 0;font-size:1rem;color:#666}
     </p>
     
     <button class="button button-yes" id="btnFinal" style="margin-top:20px">
-        <span>Fermer les yeux et sourire 😊</span>
+        <span>🎵 Écouter notre musique</span>
     </button>
 </div>
 
@@ -165,6 +176,39 @@ p{margin:15px 0;font-size:1rem;color:#666}
     </div>
 </div>
 
+<!-- Éléments audio -->
+<audio id="soundOpen" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-unlock-game-notification-253.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundClick" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundYes" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-correct-answer-tone-2870.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundNo" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundHeart" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-heartbeat-998.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundSuccess" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundMusic" preload="auto" loop>
+    <source src="https://assets.mixkit.co/music/preview/mixkit-loving-you-117.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="soundError" preload="auto">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-retro-game-emergency-alarm-1000.mp3" type="audio/mpeg">
+</audio>
+
 <script>
 // ===== VARIABLES =====
 let currentScreen = 1;
@@ -172,6 +216,89 @@ let progress = 0;
 let isDragging = false;
 let startX, startY;
 let errorCount = 0;
+let volumeOn = true;
+let userInteracted = false;
+
+// ===== INITIALISATION AUDIO =====
+const sounds = {
+    open: document.getElementById('soundOpen'),
+    click: document.getElementById('soundClick'),
+    yes: document.getElementById('soundYes'),
+    no: document.getElementById('soundNo'),
+    heart: document.getElementById('soundHeart'),
+    success: document.getElementById('soundSuccess'),
+    music: document.getElementById('soundMusic'),
+    error: document.getElementById('soundError')
+};
+
+// Préparer tous les sons
+Object.values(sounds).forEach(sound => {
+    sound.volume = 0.7;
+    sound.muted = false;
+});
+
+// ===== FONCTIONS AUDIO =====
+function playSound(soundName) {
+    if (!volumeOn || !userInteracted) return;
+    
+    try {
+        const sound = sounds[soundName];
+        if (sound) {
+            sound.currentTime = 0;
+            sound.play().catch(e => console.log("Audio error:", e));
+        }
+    } catch (e) {
+        console.log("Sound error:", e);
+    }
+}
+
+function stopSound(soundName) {
+    const sound = sounds[soundName];
+    if (sound) {
+        sound.pause();
+        sound.currentTime = 0;
+    }
+}
+
+function stopAllSounds() {
+    Object.values(sounds).forEach(sound => {
+        sound.pause();
+        sound.currentTime = 0;
+    });
+}
+
+// Gestionnaire de volume
+document.getElementById('volumeBtn').addEventListener('click', function() {
+    volumeOn = !volumeOn;
+    this.textContent = volumeOn ? '🔊' : '🔇';
+    
+    if (!volumeOn) {
+        stopAllSounds();
+    }
+});
+
+// ===== DÉTECTION PREMIÈRE INTERACTION =====
+function initUserInteraction() {
+    if (userInteracted) return;
+    
+    userInteracted = true;
+    
+    // Démarrer un son pour activer l'audio sur mobile
+    sounds.click.play().then(() => {
+        sounds.click.pause();
+        sounds.click.currentTime = 0;
+    }).catch(() => {
+        // Ignorer l'erreur, l'audio sera activé au prochain clic
+    });
+    
+    // Supprimer les écouteurs
+    document.removeEventListener('click', initUserInteraction);
+    document.removeEventListener('touchstart', initUserInteraction);
+}
+
+// Écouter la première interaction
+document.addEventListener('click', initUserInteraction);
+document.addEventListener('touchstart', initUserInteraction);
 
 // ===== FONCTIONS DE BASE =====
 function showScreen(screenNumber) {
@@ -180,6 +307,11 @@ function showScreen(screenNumber) {
     document.getElementById('screen2').classList.add('hidden');
     document.getElementById('screen3').classList.add('hidden');
     document.getElementById('screen4').classList.add('hidden');
+    
+    // Arrêter la musique si on quitte l'écran final
+    if (currentScreen === 4 && screenNumber !== 4) {
+        stopSound('music');
+    }
     
     // Montrer l'écran demandé
     document.getElementById('screen' + screenNumber).classList.remove('hidden');
@@ -206,6 +338,7 @@ function createConfetti() {
 
 // ===== ÉCRAN 1: ENVELOPPE =====
 document.getElementById('envelope').addEventListener('click', function() {
+    playSound('open');
     showScreen(2);
     this.style.transform = 'scale(1.2) rotate(10deg)';
     setTimeout(() => {
@@ -213,8 +346,15 @@ document.getElementById('envelope').addEventListener('click', function() {
     }, 300);
 });
 
+// Ajouter support tactile
+document.getElementById('envelope').addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    this.click();
+});
+
 // ===== ÉCRAN 2: QUESTION =====
 document.getElementById('btnYes').addEventListener('click', function() {
+    playSound('yes');
     createConfetti();
     this.style.transform = 'scale(0.95)';
     
@@ -225,18 +365,23 @@ document.getElementById('btnYes').addEventListener('click', function() {
 });
 
 document.getElementById('btnNo').addEventListener('click', function() {
+    playSound('no');
     errorCount++;
     
     // Différents effets selon le nombre de clics
     switch(errorCount) {
         case 1:
+            playSound('error');
             showErrorScreen();
             break;
         case 2:
+            playSound('heart');
             this.textContent = "Sûr(e)? 💔";
             this.style.background = "#ffcccc";
+            this.style.color = "#ff3333";
             break;
         case 3:
+            playSound('click');
             this.textContent = "Euh... 🤔";
             this.style.transform = "translateX(20px)";
             setTimeout(() => {
@@ -244,6 +389,7 @@ document.getElementById('btnNo').addEventListener('click', function() {
             }, 300);
             break;
         case 4:
+            playSound('success');
             this.textContent = "Bon ok, OUI! 💖";
             this.style.background = "linear-gradient(135deg,#ff4d88,#ff0066)";
             this.style.color = "white";
@@ -254,6 +400,7 @@ document.getElementById('btnNo').addEventListener('click', function() {
             }, 1000);
             break;
         default:
+            playSound('click');
             // Faire bouger le bouton
             const x = Math.random() * 50 - 25;
             const y = Math.random() * 50 - 25;
@@ -262,8 +409,18 @@ document.getElementById('btnNo').addEventListener('click', function() {
     }
 });
 
+// Support tactile pour les boutons
+['btnYes', 'btnNo'].forEach(id => {
+    const btn = document.getElementById(id);
+    btn.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        this.click();
+    });
+});
+
 function showErrorScreen() {
     document.getElementById('errorScreen').classList.add('active');
+    playSound('error');
     
     let countdown = 3;
     const countdownEl = document.getElementById('countdown');
@@ -301,6 +458,23 @@ function initDragAndDrop() {
     heart.style.left = initialLeft + 'px';
     heart.style.top = '0px';
     
+    // Sons de battement de cœur pendant le drag
+    let heartbeatInterval;
+    
+    function startHeartbeat() {
+        if (heartbeatInterval) return;
+        heartbeatInterval = setInterval(() => {
+            playSound('heart');
+        }, 800);
+    }
+    
+    function stopHeartbeat() {
+        if (heartbeatInterval) {
+            clearInterval(heartbeatInterval);
+            heartbeatInterval = null;
+        }
+    }
+    
     // Gestion tactile pour mobile
     heart.addEventListener('touchstart', function(e) {
         e.preventDefault();
@@ -311,6 +485,9 @@ function initDragAndDrop() {
         const touch = e.touches[0];
         startX = touch.clientX - this.offsetLeft;
         startY = touch.clientY - this.offsetTop;
+        
+        playSound('click');
+        startHeartbeat();
     });
     
     // Gestion souris pour desktop
@@ -322,6 +499,9 @@ function initDragAndDrop() {
         
         startX = e.clientX - this.offsetLeft;
         startY = e.clientY - this.offsetTop;
+        
+        playSound('click');
+        startHeartbeat();
     });
     
     // Mouvement tactile
@@ -414,6 +594,11 @@ function initDragAndDrop() {
         const intensity = progress / 100;
         const heartColor = `rgb(255, ${77 + intensity * 50}, ${136 + intensity * 50})`;
         document.querySelector('.fill-heart').style.background = heartColor;
+        
+        // Son de progression
+        if (progress % 25 === 0 && progress > 0 && progress < 100) {
+            playSound('click');
+        }
     }
     
     function endDrag() {
@@ -423,6 +608,7 @@ function initDragAndDrop() {
         heart.style.zIndex = '10';
         
         dropZone.classList.remove('active');
+        stopHeartbeat();
         
         if (fillInterval) {
             clearInterval(fillInterval);
@@ -453,24 +639,38 @@ function initDragAndDrop() {
     }
     
     function completeDrag() {
+        playSound('success');
+        stopHeartbeat();
         dropZone.classList.remove('active');
         dropText.textContent = "✅ Validation complète!";
         
         setTimeout(() => {
             showScreen(4);
             createConfetti();
+            // Démarrer la musique automatiquement à la fin
+            setTimeout(() => {
+                playSound('music');
+            }, 500);
         }, 1000);
     }
 }
 
 // ===== ÉCRAN 4: FINAL =====
 document.getElementById('btnFinal').addEventListener('click', function() {
-    createConfetti();
-    this.textContent = "😊💕";
-    
-    setTimeout(() => {
-        this.textContent = "Fermer les yeux et sourire 😊";
-    }, 1000);
+    if (sounds.music.paused) {
+        playSound('music');
+        this.textContent = "⏸️ Pause musique";
+        createConfetti();
+    } else {
+        stopSound('music');
+        this.textContent = "🎵 Reprendre la musique";
+    }
+});
+
+// Support tactile
+document.getElementById('btnFinal').addEventListener('touchstart', function(e) {
+    e.preventDefault();
+    this.click();
 });
 
 // ===== INITIALISATION =====
@@ -489,12 +689,33 @@ document.addEventListener('gesturestart', function(e) {
 setTimeout(() => {
     if (currentScreen === 1) {
         const envelope = document.getElementById('envelope');
-        envelope.style.transform = 'scale(1.1)';
-        setTimeout(() => {
-            envelope.style.transform = 'scale(1)';
-        }, 500);
+        envelope.style.animation = 'pulse 2s infinite';
     }
 }, 1000);
+
+// Correction pour iOS - forcer le redimensionnement
+window.addEventListener('orientationchange', function() {
+    setTimeout(() => {
+        document.body.style.height = window.innerHeight + 'px';
+    }, 100);
+});
+
+// Assurer que tout fonctionne après chargement
+window.addEventListener('load', function() {
+    // Précharger les sons discrètement
+    sounds.click.play().then(() => {
+        sounds.click.pause();
+        sounds.click.currentTime = 0;
+    }).catch(() => {});
+    
+    // Message d'aide audio
+    setTimeout(() => {
+        if (currentScreen === 1 && !userInteracted) {
+            const envelope = document.getElementById('envelope');
+            envelope.style.animation = 'pulse 1s infinite';
+        }
+    }, 2000);
+});
 </script>
 </body>
 </html>
