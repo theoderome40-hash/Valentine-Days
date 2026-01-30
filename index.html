@@ -6,803 +6,495 @@
 <title>Pour toi ❤️</title>
 <style>
 :root{--pink:#ff4d88;--red:#ff3333}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-moz-tap-highlight-color:transparent}
-body{margin:0;min-height:100vh;display:grid;place-items:center;background:linear-gradient(135deg,#ffe6f0,#ffb3d9);font-family:'Arial Rounded MT Bold','Arial',sans-serif;touch-action:none}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ffe6f0,#ffb3d9);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen,Ubuntu,sans-serif;padding:20px}
 .hidden{display:none !important}
-.card{width:95vw;max-width:500px;background:white;border-radius:20px;padding:20px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,0.15);margin:10px}
-h1,h2{margin:0 0 15px;font-size:1.8rem;line-height:1.3}
-p{margin:0 0 15px;font-size:1rem;line-height:1.5}
-button{border:none;border-radius:50px;padding:18px 30px;font-size:1.2rem;font-weight:bold;cursor:pointer;min-height:60px;min-width:140px}
-.envelope{font-size:80px;cursor:pointer;touch-action:manipulation}
+.card{width:100%;max-width:400px;background:white;border-radius:25px;padding:25px;text-align:center;box-shadow:0 15px 35px rgba(0,0,0,0.1);position:relative}
+h1{margin:0 0 20px;font-size:1.8rem;color:#ff4d88}
+p{margin:15px 0;font-size:1rem;color:#666}
 
-/* Page question */
-.question-title{color:#ff4d88;margin-bottom:30px}
-.question-instructions{margin:20px 0;color:#666;font-size:1.2rem}
-.buttons-container{display:flex;flex-direction:column;gap:15px;margin-top:30px}
-@media (min-width: 480px){.buttons-container{flex-direction:row;justify-content:center}}
-.heart-button{background:linear-gradient(to right, #ff4d88, #ff0066);color:white;font-size:1.3rem;padding:20px 35px;display:flex;align-items:center;justify-content:center;gap:10px;transition:all 0.3s;width:100%}
-@media (min-width: 480px){.heart-button{width:auto}}
-.heart-button:active{transform:scale(0.95)}
-.no-button{background:#e0e0e0;color:#666;font-size:1.3rem;padding:20px 35px;display:flex;align-items:center;justify-content:center;transition:all 0.3s;width:100%;position:relative}
-@media (min-width: 480px){.no-button{width:auto}}
-.no-button:active{transform:scale(0.95)}
+/* Enveloppe */
+.envelope{font-size:90px;margin:30px 0;cursor:pointer;display:inline-block;transition:transform 0.3s}
+.envelope:hover{transform:scale(1.1)}
+
+/* Boutons */
+.buttons-container{display:flex;flex-direction:column;gap:15px;margin:30px 0}
+.button{width:100%;padding:18px;border:none;border-radius:50px;font-size:1.3rem;font-weight:bold;cursor:pointer;transition:all 0.3s;display:flex;align-items:center;justify-content:center;gap:10px}
+.button:active{transform:scale(0.95)}
+.button-yes{background:linear-gradient(135deg,#ff4d88,#ff0066);color:white;box-shadow:0 8px 25px rgba(255,77,136,0.3)}
+.button-no{background:#f0f0f0;color:#666;box-shadow:0 5px 15px rgba(0,0,0,0.1)}
 
 /* Page drag & drop */
-.drag-instructions{margin:20px 0;color:#ff4d88;font-weight:bold;min-height:30px;font-size:1.1rem}
-.drop-zone{background:#ffe6f2;border:3px dashed #ff4d88;border-radius:15px;padding:25px;margin:20px 0;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;transition:all 0.3s;touch-action:none}
-.drop-zone.hovered{background:#ffd1e3;border-color:#ff0066}
-.drop-zone.full{background:#ffcce0}
-.drop-text{font-size:1.2rem;color:#ff4d88;font-weight:bold;text-align:center}
-.drop-icon{font-size:40px;margin-bottom:10px;display:block}
+.drop-zone{background:#ffe6f2;border:3px dashed #ff4d88;border-radius:20px;padding:30px;margin:25px 0;transition:all 0.3s}
+.drop-zone.active{background:#ffd1e3;border-color:#ff0066}
+.drop-text{font-size:1.2rem;color:#ff4d88;font-weight:bold}
 
-/* Coeur draggable - Version mobile optimisée */
-.draggable-heart-container{display:flex;justify-content:center;margin:25px 0;position:relative;height:100px}
-.draggable-heart{width:80px;height:80px;cursor:grab;user-select:none;touch-action:none;transition:transform 0.2s;position:absolute;z-index:10}
-.draggable-heart.dragging{cursor:grabbing;transform:scale(1.15);z-index:100}
-.draggable-heart.returning{transition:all 0.5s ease-out}
-.heart-origin{width:80px;height:80px;opacity:0.3;display:flex;align-items:center;justify-content:center}
+/* Coeur draggable */
+.heart-container{position:relative;height:120px;margin:30px 0}
+.draggable-heart{width:80px;height:80px;position:absolute;left:50%;top:0;transform:translateX(-50%);cursor:grab;touch-action:none;z-index:10}
+.draggable-heart:active{cursor:grabbing}
+.heart-origin{width:80px;height:80px;margin:0 auto;display:flex;align-items:center;justify-content:center;opacity:0.5}
 
 /* Barre de progression */
-.heart-progress{width:100%;height:12px;background:#eee;border-radius:6px;margin:25px 0;overflow:hidden}
-.progress-bar{height:100%;background:linear-gradient(to right, #ff4d88, #ff0066);width:0%;transition:width 0.3s}
+.progress-container{width:100%;height:12px;background:#eee;border-radius:6px;margin:25px 0;overflow:hidden}
+.progress-bar{height:100%;background:linear-gradient(to right,#ff4d88,#ff0066);width:0%;transition:width 0.3s}
 
 /* Coeur qui se remplit */
-.heart-fill-container{position:relative;width:120px;height:120px;margin:25px auto}
-.fill-heart{width:120px;height:120px;background:#ff4d88;transform:rotate(-45deg);position:absolute;left:0;top:0}
-.fill-heart::before,.fill-heart::after{content:"";width:120px;height:120px;background:#ff4d88;border-radius:50%;position:absolute}
-.fill-heart::before{top:-60px;left:0}
-.fill-heart::after{left:60px;top:0}
-.fill-mask{position:absolute;bottom:0;left:0;width:100%;height:100%;background:white;transition:height 1s ease-out}
-.heart-label{position:absolute;top:50%;left:50%;transform:translate(-50%, -50%);z-index:10;font-weight:bold;color:white;font-size:1.3rem}
+.heart-fill-container{position:relative;width:100px;height:100px;margin:20px auto}
+.fill-heart{width:100px;height:100px;background:#ff4d88;transform:rotate(-45deg);position:absolute}
+.fill-heart:before,.fill-heart:after{content:'';width:100px;height:100px;background:#ff4d88;border-radius:50%;position:absolute}
+.fill-heart:before{top:-50px;left:0}
+.fill-heart:after{left:50px;top:0}
+.fill-mask{position:absolute;bottom:0;width:100%;height:100%;background:white;transition:height 0.5s}
+.heart-percent{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:white;font-weight:bold;font-size:1.2rem;z-index:2}
 
-/* Page finale */
-.final-message{background:#fff5f9;border-radius:12px;padding:20px;margin:25px 0;border-left:5px solid #ff4d88}
-.heart-row{display:flex;justify-content:center;gap:15px;margin:25px 0}
-.heart-emoji{font-size:40px;animation:bounce 1s infinite alternate}
-@keyframes bounce{from{transform:translateY(0)}to{transform:translateY(-15px)}}
-.heart-emoji:nth-child(2){animation-delay:0.2s}
-.heart-emoji:nth-child(3){animation-delay:0.4s}
+/* Message */
+.message{background:#fff5f9;border-radius:15px;padding:15px;margin:20px 0;border-left:5px solid #ff4d88}
 
-/* Animations */
-.success-animation{animation:pulse 0.5s 3}
-@keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.1)}100%{transform:scale(1)}}
-.shake{animation:shake 0.5s}
-@keyframes shake{0%,100%{transform:translateX(0)}10%,30%,50%,70%,90%{transform:translateX(-5px)}20%,40%,60%,80%{transform:translateX(5px)}}
-
-/* Écran d'erreur système mobile */
-.system-error{position:fixed;top:0;left:0;width:100%;height:100%;background:#000;z-index:1000;display:none;align-items:center;justify-content:center;font-family:'Courier New',monospace;padding:20px}
-.system-error.active{display:flex}
-.terminal{background:#111;color:#0f0;padding:25px;border-radius:10px;max-width:95%;width:100%;box-shadow:0 0 30px #0f0}
-.terminal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.terminal-title{font-weight:bold;font-size:1.2rem}
-.terminal-close{color:#f00;cursor:pointer;font-size:1.5rem;padding:10px}
-.terminal-text{line-height:1.6;font-size:1rem}
+/* Écran erreur */
+.error-screen{position:fixed;top:0;left:0;width:100%;height:100%;background:black;z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.error-screen.active{display:flex}
+.error-content{background:#111;color:#0f0;padding:25px;border-radius:15px;max-width:400px;width:100%;font-family:monospace}
+.error-text{line-height:1.6}
 .blink{animation:blink 1s infinite}
 @keyframes blink{50%{opacity:0}}
-.glitch{position:relative;animation:glitch 0.3s infinite}
-@keyframes glitch{0%{transform:translateX(0)}20%{transform:translateX(-2px)}40%{transform:translateX(2px)}60%{transform:translateX(-1px)}80%{transform:translateX(1px)}100%{transform:translateX(0)}}
 
-/* Message flottant mobile */
-.floating-message{position:fixed;top:20px;left:50%;transform:translateX(-50%);background:#ff4d88;color:white;padding:15px 20px;border-radius:10px;box-shadow:0 5px 15px rgba(0,0,0,0.2);z-index:1001;display:none;animation:slideIn 0.5s;max-width:90%;text-align:center}
-@keyframes slideIn{from{transform:translate(-50%, -100%);opacity:0}to{transform:translate(-50%, 0);opacity:1}}
+/* Confetti */
+.confetti{position:fixed;width:10px;height:10px;opacity:0;top:-10px}
+@keyframes confetti-fall{0%{transform:translateY(0) rotate(0deg);opacity:1}100%{transform:translateY(100vh) rotate(360deg);opacity:0}}
 
-/* Tap animation for mobile */
-.tap-animation{position:absolute;width:60px;height:60px;border-radius:50%;background:rgba(255,77,136,0.2);animation:pulse-tap 1.5s infinite;pointer-events:none}
-@keyframes pulse-tap{0%{transform:scale(0.8);opacity:0.7}100%{transform:scale(1.5);opacity:0}}
-
-/* Feedback tactile */
-.touch-feedback{position:fixed;width:50px;height:50px;border-radius:50%;background:rgba(255,77,136,0.5);pointer-events:none;z-index:1002;transform:translate(-50%, -50%);animation:ripple 0.6s ease-out}
-@keyframes ripple{0%{transform:translate(-50%, -50%) scale(0);opacity:1}100%{transform:translate(-50%, -50%) scale(3);opacity:0}}
-
-/* Instructions mobiles */
-.mobile-hint{position:absolute;bottom:-40px;left:0;width:100%;text-align:center;color:#ff4d88;font-size:0.9rem;font-weight:bold}
-.mobile-hint::before{content:"👆 ";font-size:1.2rem}
-
-/* Loader pour mobile */
-.loader{width:40px;height:40px;border:4px solid #f3f3f3;border-top:4px solid #ff4d88;border-radius:50%;animation:spin 1s linear infinite;margin:20px auto}
-@keyframes spin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
-
-/* Safe area pour iPhone */
-@supports(padding:max(0px)){
-    .card, .floating-message{padding-left:max(20px, env(safe-area-inset-left));padding-right:max(20px, env(safe-area-inset-right))}
-    body{padding-top:env(safe-area-inset-top);padding-bottom:env(safe-area-inset-bottom)}
+/* Responsive */
+@media (max-width: 480px){
+    .card{padding:20px}
+    h1{font-size:1.5rem}
+    .button{padding:16px;font-size:1.2rem}
+    .envelope{font-size:70px}
 }
 </style>
 </head>
 <body>
 
-<!-- ENVELOPPE -->
-<div class="card" id="pageEnvelope">
-  <div class="envelope" id="openEnvelope">💌</div>
-  <p>Appuie sur l'enveloppe</p>
-  <div class="tap-animation"></div>
+<!-- Écran 1: Enveloppe -->
+<div class="card" id="screen1">
+    <h1>💌 Une lettre pour toi</h1>
+    <p>Touche l'enveloppe pour ouvrir</p>
+    <div class="envelope" id="envelope">💌</div>
 </div>
 
-<!-- PAGE QUESTION -->
-<div class="card hidden" id="pageQuestion">
-  <h1 class="question-title">Veux-tu être ma Valentine ? 💘</h1>
-  
-  <div class="question-instructions">
-    Choisis ta réponse :
-  </div>
-  
-  <div class="buttons-container">
-    <button class="heart-button" id="yesButton">
-      <span>OUI 💖</span>
+<!-- Écran 2: Question -->
+<div class="card hidden" id="screen2">
+    <h1>Veux-tu être ma Valentine ? 💘</h1>
+    <p>Choisis avec ton cœur...</p>
+    
+    <div class="buttons-container">
+        <button class="button button-yes" id="btnYes">
+            <span>OUI 💖</span>
+        </button>
+        <button class="button button-no" id="btnNo">
+            <span>NON 😔</span>
+        </button>
+    </div>
+    
+    <p style="font-size:0.9rem;color:#999">Ta réponse va rendre mon jour spécial</p>
+</div>
+
+<!-- Écran 3: Drag & Drop -->
+<div class="card hidden" id="screen3">
+    <h1>Parfait! 💕</h1>
+    <p>Maintenant, touche et glisse le cœur pour confirmer</p>
+    
+    <div class="drop-zone" id="dropZone">
+        <div class="drop-text" id="dropText">Glisse le cœur ici</div>
+    </div>
+    
+    <div class="progress-container">
+        <div class="progress-bar" id="progressBar"></div>
+    </div>
+    
+    <div class="heart-fill-container">
+        <div class="fill-heart">
+            <div class="fill-mask" id="fillMask"></div>
+        </div>
+        <div class="heart-percent" id="heartPercent">0%</div>
+    </div>
+    
+    <div class="heart-container">
+        <div class="heart-origin">↓</div>
+        <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23ff4d88'%3E%3Cpath d='M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z'/%3E%3C/svg%3E" 
+             class="draggable-heart" 
+             id="draggableHeart"
+             alt="Cœur"
+             width="80"
+             height="80">
+    </div>
+</div>
+
+<!-- Écran 4: Final -->
+<div class="card hidden" id="screen4">
+    <h1>🎉 MERCI! 💕</h1>
+    
+    <div class="message">
+        <h2>Tu as dit OUI! ❤️</h2>
+        <p>Tu as rendu ce jour incroyablement spécial</p>
+    </div>
+    
+    <div style="font-size:60px;margin:20px 0">
+        💖💕💘
+    </div>
+    
+    <p style="font-size:1.3rem;color:#ff4d88;font-weight:bold">
+        Je t'aime hyper fort!
+    </p>
+    
+    <button class="button button-yes" id="btnFinal" style="margin-top:20px">
+        <span>Fermer les yeux et sourire 😊</span>
     </button>
-    <button class="no-button" id="noButton">
-      <span>NON 😔</span>
-    </button>
-  </div>
-  
-  <p style="margin-top:30px; color:#666; font-size:1rem">
-    Ta réponse va rendre mon jour spécial...
-  </p>
 </div>
 
-<!-- PAGE DRAG & DROP -->
-<div class="card hidden" id="pageDrag">
-  <h1 style="color:#ff4d88">Super! Maintenant confirme avec ton cœur 💕</h1>
-  
-  <div class="drag-instructions" id="instructions">
-    Touche et glisse le cœur vers la zone ci-dessous
-  </div>
-  
-  <div class="heart-progress">
-    <div class="progress-bar" id="progressBar"></div>
-  </div>
-  
-  <div class="heart-fill-container">
-    <div class="fill-heart">
-      <div class="fill-mask" id="fillMask"></div>
+<!-- Écran d'erreur -->
+<div class="error-screen" id="errorScreen">
+    <div class="error-content">
+        <h2 style="color:#f00">⚠ ERREUR SYSTÈME</h2>
+        <div class="error-text">
+            <p>> Détection: Bouton "NON" défectueux</p>
+            <p>> Code: 0xLOVE_REQUIRED</p>
+            <p>> Diagnostic: Cœur veut dire OUI</p>
+            <p>> Correction automatique...</p>
+            <p>> Redirection dans <span id="countdown">3</span>s <span class="blink">_</span></p>
+        </div>
     </div>
-    <div class="heart-label" id="heartLabel">0%</div>
-  </div>
-  
-  <div class="drop-zone" id="dropZone">
-    <div class="drop-icon">💝</div>
-    <div class="drop-text" id="dropText">Dépose ici pour valider</div>
-  </div>
-  
-  <div class="draggable-heart-container">
-    <div class="heart-origin">
-      <div class="loader" id="heartLoader"></div>
-    </div>
-    <img src="https://cdn-icons-png.flaticon.com/512/210/210545.png" class="draggable-heart" id="draggableHeart" alt="Coeur à glisser">
-  </div>
-  
-  <p style="margin-top:20px; color:#666; font-size:1rem">
-    <span class="mobile-hint">Touche longtemps le cœur et glisse-le</span>
-  </p>
 </div>
-
-<!-- PAGE FINALE -->
-<div class="card hidden" id="pageFinal">
-  <div style="width:100%;height:200px;background:linear-gradient(135deg,#ff4d88,#ff0066);border-radius:15px;display:flex;align-items:center;justify-content:center;margin-bottom:20px">
-    <div style="font-size:80px">💖</div>
-  </div>
-  
-  <div class="final-message">
-    <h2>Double validation réussie! 💕</h2>
-    <p>Tu as dit OUI et confirmé avec ton cœur!</p>
-  </div>
-  
-  <div class="heart-row">
-    <div class="heart-emoji">💖</div>
-    <div class="heart-emoji">💕</div>
-    <div class="heart-emoji">💘</div>
-  </div>
-  
-  <p style="font-size:1.3rem;color:#ff4d88;font-weight:bold">Je t'aime hyper fort ❤️</p>
-  
-  <button class="heart-button" id="thanks" style="margin-top:20px">
-    <span>Merci pour ce OUI 💖</span>
-  </button>
-</div>
-
-<!-- ÉCRAN D'ERREUR SYSTÈME -->
-<div class="system-error" id="systemError">
-  <div class="terminal">
-    <div class="terminal-header">
-      <div class="terminal-title">ERREUR SYSTÈME</div>
-      <div class="terminal-close" id="closeError">✕</div>
-    </div>
-    <div class="terminal-text">
-      <p>> ERREUR: BOUTON "NON" DÉFECTUEUX</p>
-      <p>> Code: 0xHEART_MALFUNCTION</p>
-      <p>> Analyse en cours<span class="blink">...</span></p>
-      <p class="glitch">> Système détecte: ❤️ veut dire OUI</p>
-      <p>> Réparation automatique...</p>
-      <p>> Redirection vers OUI dans <span id="countdown">5</span>s<span class="blink">_</span></p>
-    </div>
-  </div>
-</div>
-
-<!-- MESSAGE FLOTTANT -->
-<div class="floating-message" id="floatingMessage">
-  Le système détecte que ton cœur veut dire OUI! 💖
-</div>
-
-<!-- Sons -->
-<audio id="music" src="LoversRock.mp3" loop preload="auto"></audio>
-<audio id="errorSound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-wrong-answer-fail-notification-946.mp3" type="audio/mpeg">
-</audio>
-<audio id="clickSound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-select-click-1109.mp3" type="audio/mpeg">
-</audio>
-<audio id="successSound" preload="auto">
-  <source src="https://assets.mixkit.co/sfx/preview/mixkit-achievement-bell-600.mp3" type="audio/mpeg">
-</audio>
 
 <script>
-// ========== ÉLÉMENTS DOM ==========
-const pageEnvelope = document.getElementById('pageEnvelope');
-const pageQuestion = document.getElementById('pageQuestion');
-const pageDrag = document.getElementById('pageDrag');
-const pageFinal = document.getElementById('pageFinal');
-const yesButton = document.getElementById('yesButton');
-const noButton = document.getElementById('noButton');
-const instructions = document.getElementById('instructions');
-const dropZone = document.getElementById('dropZone');
-const dropText = document.getElementById('dropText');
-const draggableHeart = document.getElementById('draggableHeart');
-const heartLoader = document.getElementById('heartLoader');
-const progressBar = document.getElementById('progressBar');
-const fillMask = document.getElementById('fillMask');
-const heartLabel = document.getElementById('heartLabel');
-const music = document.getElementById('music');
-const thanks = document.getElementById('thanks');
-const systemError = document.getElementById('systemError');
-const closeError = document.getElementById('closeError');
-const countdownElement = document.getElementById('countdown');
-const floatingMessage = document.getElementById('floatingMessage');
-
-// ========== VARIABLES ==========
-let isDragging = false;
+// ===== VARIABLES =====
+let currentScreen = 1;
 let progress = 0;
-let fillInterval = null;
-let noButtonClickCount = 0;
-let noButtonMoving = false;
-let startX, startY, initialX, initialY;
-let heartOrigin = null;
+let isDragging = false;
+let startX, startY;
+let errorCount = 0;
 
-// ========== INITIALISATION ==========
-document.addEventListener('DOMContentLoaded', () => {
-  // Précharger les sons
-  preloadAudio();
-  
-  // Initialiser la position d'origine du cœur
-  setTimeout(() => {
-    const rect = draggableHeart.getBoundingClientRect();
-    heartOrigin = {
-      x: rect.left,
-      y: rect.top,
-      width: rect.width,
-      height: rect.height
-    };
-    heartLoader.classList.add('hidden');
-  }, 500);
-  
-  // Adapter pour mobile
-  if (isMobile()) {
-    document.body.style.touchAction = 'none';
-    makeButtonsLargerForMobile();
-  }
-});
-
-// ========== FONCTIONS MOBILE ==========
-function isMobile() {
-  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-}
-
-function makeButtonsLargerForMobile() {
-  const buttons = document.querySelectorAll('button');
-  buttons.forEach(btn => {
-    btn.style.padding = '22px 35px';
-    btn.style.fontSize = '1.4rem';
-    btn.style.minHeight = '70px';
-  });
-}
-
-function showTouchFeedback(x, y) {
-  const feedback = document.createElement('div');
-  feedback.className = 'touch-feedback';
-  feedback.style.left = x + 'px';
-  feedback.style.top = y + 'px';
-  document.body.appendChild(feedback);
-  
-  setTimeout(() => {
-    feedback.remove();
-  }, 600);
-}
-
-// ========== ÉTAPE 1: OUVERTURE ENVELOPPE ==========
-openEnvelope.addEventListener('click', openEnvelopeHandler);
-openEnvelope.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  showTouchFeedback(e.touches[0].clientX, e.touches[0].clientY);
-  openEnvelopeHandler();
-});
-
-function openEnvelopeHandler() {
-  playClickSound();
-  pageEnvelope.classList.add('hidden');
-  pageQuestion.classList.remove('hidden');
-  
-  // Animation
-  pageQuestion.style.transform = 'scale(0.9)';
-  pageQuestion.style.opacity = '0';
-  
-  setTimeout(() => {
-    pageQuestion.style.transition = 'all 0.3s ease';
-    pageQuestion.style.transform = 'scale(1)';
-    pageQuestion.style.opacity = '1';
-  }, 10);
-  
-  setTimeout(() => {
-    showFloatingMessage("Choisis avec ton cœur 💖");
-  }, 1000);
-}
-
-// ========== ÉTAPE 2: BOUTON OUI ==========
-yesButton.addEventListener('click', yesButtonHandler);
-yesButton.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  showTouchFeedback(e.touches[0].clientX, e.touches[0].clientY);
-  yesButtonHandler();
-});
-
-function yesButtonHandler() {
-  playSuccessSound();
-  yesButton.classList.add('success-animation');
-  
-  // Transition vers page drag & drop
-  setTimeout(() => {
-    pageQuestion.classList.add('hidden');
-    pageDrag.classList.remove('hidden');
+// ===== FONCTIONS DE BASE =====
+function showScreen(screenNumber) {
+    // Cacher tous les écrans
+    document.getElementById('screen1').classList.add('hidden');
+    document.getElementById('screen2').classList.add('hidden');
+    document.getElementById('screen3').classList.add('hidden');
+    document.getElementById('screen4').classList.add('hidden');
     
-    // Animation d'entrée
-    pageDrag.style.transform = 'translateY(20px)';
-    pageDrag.style.opacity = '0';
+    // Montrer l'écran demandé
+    document.getElementById('screen' + screenNumber).classList.remove('hidden');
+    currentScreen = screenNumber;
+}
+
+function createConfetti() {
+    const colors = ['#ff4d88', '#ff0066', '#ff66b2', '#ff3385'];
+    
+    for (let i = 0; i < 30; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + 'vw';
+        confetti.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        confetti.style.width = Math.random() * 10 + 5 + 'px';
+        confetti.style.height = Math.random() * 10 + 5 + 'px';
+        confetti.style.animation = `confetti-fall ${Math.random() * 2 + 1}s linear forwards`;
+        
+        document.body.appendChild(confetti);
+        
+        setTimeout(() => confetti.remove(), 3000);
+    }
+}
+
+// ===== ÉCRAN 1: ENVELOPPE =====
+document.getElementById('envelope').addEventListener('click', function() {
+    showScreen(2);
+    this.style.transform = 'scale(1.2) rotate(10deg)';
+    setTimeout(() => {
+        this.style.transform = 'scale(1)';
+    }, 300);
+});
+
+// ===== ÉCRAN 2: QUESTION =====
+document.getElementById('btnYes').addEventListener('click', function() {
+    createConfetti();
+    this.style.transform = 'scale(0.95)';
     
     setTimeout(() => {
-      pageDrag.style.transition = 'all 0.4s ease';
-      pageDrag.style.transform = 'translateY(0)';
-      pageDrag.style.opacity = '1';
-    }, 10);
-    
-    // Instructions pour mobile
-    if (isMobile()) {
-      instructions.textContent = "Touche longtemps le cœur et glisse-le vers la zone rose";
-      showFloatingMessage("Glisse le cœur pour confirmer ton OUI 💕");
-    }
-  }, 500);
-}
-
-// ========== ÉTAPE 3: BOUTON NON (PROBLÈMES) ==========
-noButton.addEventListener('click', noButtonHandler);
-noButton.addEventListener('touchstart', (e) => {
-  e.preventDefault();
-  if (noButtonMoving) return;
-  
-  showTouchFeedback(e.touches[0].clientX, e.touches[0].clientY);
-  noButtonHandler();
-});
-
-function noButtonHandler() {
-  noButtonClickCount++;
-  playErrorSound();
-  noButton.classList.add('shake');
-  
-  setTimeout(() => {
-    noButton.classList.remove('shake');
-  }, 500);
-  
-  // Comportements différents selon le nombre de clics
-  switch(noButtonClickCount) {
-    case 1:
-      showSystemError();
-      showFloatingMessage("Erreur détectée! Essaie OUI 💖");
-      break;
-      
-    case 2:
-      noButton.innerHTML = "Sûr(e)? 💔";
-      makeButtonMove();
-      showFloatingMessage("Ton cœur murmure OUI...");
-      break;
-      
-    case 3:
-      noButton.innerHTML = "Vraiment? 😢";
-      noButton.style.transform = "scale(0.9)";
-      showFloatingMessage("Le OUI est tellement plus beau!");
-      break;
-      
-    case 4:
-      noButton.innerHTML = "Attends... 🤔";
-      noButton.style.background = "#ffcccc";
-      noButton.style.color = "#ff3333";
-      showFloatingMessage("Presque convaincu(e) de dire OUI?");
-      break;
-      
-    case 5:
-      // Transformation finale en OUI
-      noButton.innerHTML = "Bon ok... OUI! 💖";
-      noButton.style.background = "linear-gradient(to right, #ff4d88, #ff0066)";
-      noButton.style.color = "white";
-      noButton.style.transform = "scale(1.1)";
-      noButton.style.boxShadow = "0 5px 20px rgba(255,77,136,0.4)";
-      showFloatingMessage("YES! Je savais que tu dirais OUI! 🎉");
-      
-      // Auto-clic sur OUI après délai
-      setTimeout(() => {
-        yesButtonHandler();
-      }, 1500);
-      break;
-      
-    default:
-      // Continue à bouger
-      makeButtonMove();
-      break;
-  }
-}
-
-// ========== DRAG & DROP POUR MOBILE ==========
-// Événements tactiles pour le cœur
-draggableHeart.addEventListener('touchstart', handleTouchStart, { passive: false });
-document.addEventListener('touchmove', handleTouchMove, { passive: false });
-document.addEventListener('touchend', handleTouchEnd, { passive: false });
-
-// Événements souris pour desktop
-draggableHeart.addEventListener('mousedown', handleMouseDown);
-document.addEventListener('mousemove', handleMouseMove);
-document.addEventListener('mouseup', handleMouseEnd);
-
-function handleTouchStart(e) {
-  e.preventDefault();
-  if (isDragging) return;
-  
-  const touch = e.touches[0];
-  startX = touch.clientX;
-  startY = touch.clientY;
-  
-  // Position initiale
-  const rect = draggableHeart.getBoundingClientRect();
-  initialX = rect.left;
-  initialY = rect.top;
-  
-  isDragging = true;
-  draggableHeart.classList.add('dragging');
-  draggableHeart.style.position = 'fixed';
-  draggableHeart.style.zIndex = '1000';
-  
-  instructions.textContent = "Ne lâche pas! Continue...";
-  showTouchFeedback(startX, startY);
-}
-
-function handleTouchMove(e) {
-  if (!isDragging) return;
-  e.preventDefault();
-  
-  const touch = e.touches[0];
-  const currentX = touch.clientX;
-  const currentY = touch.clientY;
-  
-  // Déplacer le cœur
-  draggableHeart.style.left = (currentX - draggableHeart.offsetWidth / 2) + 'px';
-  draggableHeart.style.top = (currentY - draggableHeart.offsetHeight / 2) + 'px';
-  
-  // Vérifier si on est sur la drop zone
-  const dropZoneRect = dropZone.getBoundingClientRect();
-  const heartRect = draggableHeart.getBoundingClientRect();
-  
-  const isOverDropZone = 
-    heartRect.left < dropZoneRect.right &&
-    heartRect.right > dropZoneRect.left &&
-    heartRect.top < dropZoneRect.bottom &&
-    heartRect.bottom > dropZoneRect.top;
-  
-  if (isOverDropZone) {
-    dropZone.classList.add('hovered');
-    
-    // Commencer à remplir si pas déjà
-    if (!fillInterval) {
-      fillInterval = setInterval(() => {
-        if (progress < 100) {
-          progress += 3; // Plus rapide sur mobile
-          updateProgress();
-          
-          // Messages de progression
-          if (progress < 25) {
-            dropText.textContent = "Validation...";
-          } else if (progress < 50) {
-            dropText.textContent = "Continue...";
-          } else if (progress < 75) {
-            dropText.textContent = "Presque!";
-          } else if (progress < 90) {
-            dropText.textContent = "OUI confirmé!";
-          } else {
-            dropText.textContent = "💖 COMPLET 💖";
-          }
-        } else {
-          clearInterval(fillInterval);
-          completeDrag();
-        }
-      }, 50);
-    }
-  } else {
-    dropZone.classList.remove('hovered');
-    if (fillInterval) {
-      clearInterval(fillInterval);
-      fillInterval = null;
-    }
-  }
-}
-
-function handleTouchEnd(e) {
-  if (!isDragging) return;
-  e.preventDefault();
-  
-  isDragging = false;
-  draggableHeart.classList.remove('dragging');
-  dropZone.classList.remove('hovered');
-  
-  if (fillInterval) {
-    clearInterval(fillInterval);
-    fillInterval = null;
-  }
-  
-  // Si pas complété, retour à la position initiale
-  if (progress < 100) {
-    draggableHeart.classList.add('returning');
-    draggableHeart.style.transition = 'all 0.5s ease-out';
-    draggableHeart.style.left = initialX + 'px';
-    draggableHeart.style.top = initialY + 'px';
-    draggableHeart.style.position = 'absolute';
-    
-    // Réduire la progression
-    const revertInterval = setInterval(() => {
-      if (progress > 0) {
-        progress -= 5;
-        updateProgress();
-      } else {
-        clearInterval(revertInterval);
-        instructions.textContent = "Presque! Glisse jusqu'au bout";
-        dropText.textContent = "Dépose ici pour valider";
-      }
-    }, 30);
-    
-    setTimeout(() => {
-      draggableHeart.classList.remove('returning');
-      draggableHeart.style.transition = '';
+        showScreen(3);
+        initDragAndDrop();
     }, 500);
-  }
-}
+});
 
-// Gestion souris (desktop)
-function handleMouseDown(e) {
-  e.preventDefault();
-  startX = e.clientX;
-  startY = e.clientY;
-  
-  const rect = draggableHeart.getBoundingClientRect();
-  initialX = rect.left;
-  initialY = rect.top;
-  
-  isDragging = true;
-  draggableHeart.classList.add('dragging');
-  draggableHeart.style.position = 'fixed';
-  draggableHeart.style.zIndex = '1000';
-}
-
-function handleMouseMove(e) {
-  if (!isDragging) return;
-  
-  const currentX = e.clientX;
-  const currentY = e.clientY;
-  
-  draggableHeart.style.left = (currentX - draggableHeart.offsetWidth / 2) + 'px';
-  draggableHeart.style.top = (currentY - draggableHeart.offsetHeight / 2) + 'px';
-  
-  // Vérification drop zone
-  const dropZoneRect = dropZone.getBoundingClientRect();
-  const heartRect = draggableHeart.getBoundingClientRect();
-  
-  const isOverDropZone = 
-    heartRect.left < dropZoneRect.right &&
-    heartRect.right > dropZoneRect.left &&
-    heartRect.top < dropZoneRect.bottom &&
-    heartRect.bottom > dropZoneRect.top;
-  
-  if (isOverDropZone) {
-    dropZone.classList.add('hovered');
+document.getElementById('btnNo').addEventListener('click', function() {
+    errorCount++;
     
-    if (!fillInterval) {
-      fillInterval = setInterval(() => {
-        if (progress < 100) {
-          progress += 2;
-          updateProgress();
-          
-          if (progress < 30) dropText.textContent = "Validation...";
-          else if (progress < 60) dropText.textContent = "Continue...";
-          else if (progress < 90) dropText.textContent = "Presque!";
-          else dropText.textContent = "💖 COMPLET 💖";
-        } else {
-          clearInterval(fillInterval);
-          completeDrag();
+    // Différents effets selon le nombre de clics
+    switch(errorCount) {
+        case 1:
+            showErrorScreen();
+            break;
+        case 2:
+            this.textContent = "Sûr(e)? 💔";
+            this.style.background = "#ffcccc";
+            break;
+        case 3:
+            this.textContent = "Euh... 🤔";
+            this.style.transform = "translateX(20px)";
+            setTimeout(() => {
+                this.style.transform = "translateX(0)";
+            }, 300);
+            break;
+        case 4:
+            this.textContent = "Bon ok, OUI! 💖";
+            this.style.background = "linear-gradient(135deg,#ff4d88,#ff0066)";
+            this.style.color = "white";
+            
+            // Auto-clic sur OUI après 1 seconde
+            setTimeout(() => {
+                document.getElementById('btnYes').click();
+            }, 1000);
+            break;
+        default:
+            // Faire bouger le bouton
+            const x = Math.random() * 50 - 25;
+            const y = Math.random() * 50 - 25;
+            this.style.transform = `translate(${x}px, ${y}px)`;
+            break;
+    }
+});
+
+function showErrorScreen() {
+    document.getElementById('errorScreen').classList.add('active');
+    
+    let countdown = 3;
+    const countdownEl = document.getElementById('countdown');
+    countdownEl.textContent = countdown;
+    
+    const timer = setInterval(() => {
+        countdown--;
+        countdownEl.textContent = countdown;
+        
+        if (countdown <= 0) {
+            clearInterval(timer);
+            document.getElementById('errorScreen').classList.remove('active');
+            document.getElementById('btnYes').click();
         }
-      }, 50);
-    }
-  } else {
-    dropZone.classList.remove('hovered');
-    if (fillInterval) {
-      clearInterval(fillInterval);
-      fillInterval = null;
-    }
-  }
+    }, 1000);
 }
 
-function handleMouseEnd(e) {
-  if (!isDragging) return;
-  
-  isDragging = false;
-  draggableHeart.classList.remove('dragging');
-  dropZone.classList.remove('hovered');
-  
-  if (fillInterval) {
-    clearInterval(fillInterval);
-    fillInterval = null;
-  }
-  
-  if (progress < 100) {
-    draggableHeart.classList.add('returning');
-    draggableHeart.style.transition = 'all 0.5s ease-out';
-    draggableHeart.style.left = initialX + 'px';
-    draggableHeart.style.top = initialY + 'px';
-    draggableHeart.style.position = 'absolute';
+// ===== ÉCRAN 3: DRAG & DROP =====
+function initDragAndDrop() {
+    const heart = document.getElementById('draggableHeart');
+    const dropZone = document.getElementById('dropZone');
+    const progressBar = document.getElementById('progressBar');
+    const fillMask = document.getElementById('fillMask');
+    const heartPercent = document.getElementById('heartPercent');
+    const dropText = document.getElementById('dropText');
     
-    const revertInterval = setInterval(() => {
-      if (progress > 0) {
-        progress -= 3;
-        updateProgress();
-      } else {
-        clearInterval(revertInterval);
-        instructions.textContent = "Glisse le cœur vers la zone";
-        dropText.textContent = "Dépose ici pour valider";
-      }
-    }, 30);
+    let fillInterval;
     
-    setTimeout(() => {
-      draggableHeart.classList.remove('returning');
-      draggableHeart.style.transition = '';
-    }, 500);
-  }
-}
-
-// ========== MISE À JOUR PROGRESSION ==========
-function updateProgress() {
-  progressBar.style.width = `${progress}%`;
-  fillMask.style.height = `${100 - progress}%`;
-  heartLabel.textContent = `${Math.round(progress)}%`;
-  
-  // Changement de couleur
-  const r = 255;
-  const g = Math.floor(77 + progress * 0.8);
-  const b = Math.floor(136 + progress * 0.5);
-  const heartColor = `rgb(${r}, ${g}, ${b})`;
-  
-  const heart = document.querySelector('.fill-heart');
-  heart.style.background = heartColor;
-  heart.style.setProperty('--heart-color', heartColor);
-}
-
-// ========== VALIDATION COMPLÈTE ==========
-function completeDrag() {
-  draggableHeart.style.display = 'none';
-  dropZone.classList.add('full');
-  dropZone.classList.add('success-animation');
-  instructions.textContent = "Validation complète! 💕";
-  
-  // Sons et animations
-  playSuccessSound();
-  
-  // Transition vers page finale
-  setTimeout(() => {
-    pageDrag.classList.add('hidden');
-    pageFinal.classList.remove('hidden');
+    // Position initiale du cœur
+    const heartContainer = document.querySelector('.heart-container');
+    const containerRect = heartContainer.getBoundingClientRect();
+    const initialLeft = containerRect.width / 2 - 40; // 40 = moitié de la largeur du cœur
     
-    // Animation
-    pageFinal.style.transform = 'scale(0.9)';
-    pageFinal.style.opacity = '0';
+    heart.style.position = 'absolute';
+    heart.style.left = initialLeft + 'px';
+    heart.style.top = '0px';
     
-    setTimeout(() => {
-      pageFinal.style.transition = 'all 0.5s ease';
-      pageFinal.style.transform = 'scale(1)';
-      pageFinal.style.opacity = '1';
-    }, 10);
-    
-    // Musique
-    music.play().catch(e => {
-      console.log("Musique nécessite interaction:", e);
-      // On attend un clic sur le bouton merci
+    // Gestion tactile pour mobile
+    heart.addEventListener('touchstart', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        this.style.cursor = 'grabbing';
+        this.style.zIndex = '1000';
+        
+        const touch = e.touches[0];
+        startX = touch.clientX - this.offsetLeft;
+        startY = touch.clientY - this.offsetTop;
     });
-  }, 1000);
-}
-
-// ========== FONCTIONS UTILITAIRES ==========
-function showSystemError() {
-  systemError.classList.add('active');
-  
-  let countdown = 5;
-  countdownElement.textContent = countdown;
-  
-  const countdownInterval = setInterval(() => {
-    countdown--;
-    countdownElement.textContent = countdown;
     
-    if (countdown <= 0) {
-      clearInterval(countdownInterval);
-      systemError.classList.remove('active');
-      showFloatingMessage("Redirection vers OUI...");
-      setTimeout(() => yesButtonHandler(), 500);
+    // Gestion souris pour desktop
+    heart.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+        isDragging = true;
+        this.style.cursor = 'grabbing';
+        this.style.zIndex = '1000';
+        
+        startX = e.clientX - this.offsetLeft;
+        startY = e.clientY - this.offsetTop;
+    });
+    
+    // Mouvement tactile
+    document.addEventListener('touchmove', function(e) {
+        if (!isDragging) return;
+        e.preventDefault();
+        
+        const touch = e.touches[0];
+        const heart = document.getElementById('draggableHeart');
+        
+        const newX = touch.clientX - startX;
+        const newY = touch.clientY - startY;
+        
+        heart.style.left = newX + 'px';
+        heart.style.top = newY + 'px';
+        
+        checkDropZone(heart, dropZone);
+    });
+    
+    // Mouvement souris
+    document.addEventListener('mousemove', function(e) {
+        if (!isDragging) return;
+        
+        const heart = document.getElementById('draggableHeart');
+        const newX = e.clientX - startX;
+        const newY = e.clientY - startY;
+        
+        heart.style.left = newX + 'px';
+        heart.style.top = newY + 'px';
+        
+        checkDropZone(heart, dropZone);
+    });
+    
+    // Fin du drag
+    document.addEventListener('touchend', function() {
+        if (!isDragging) return;
+        endDrag();
+    });
+    
+    document.addEventListener('mouseup', function() {
+        if (!isDragging) return;
+        endDrag();
+    });
+    
+    function checkDropZone(heart, zone) {
+        const heartRect = heart.getBoundingClientRect();
+        const zoneRect = zone.getBoundingClientRect();
+        
+        // Vérifier collision
+        const collision = !(
+            heartRect.right < zoneRect.left ||
+            heartRect.left > zoneRect.right ||
+            heartRect.bottom < zoneRect.top ||
+            heartRect.top > zoneRect.bottom
+        );
+        
+        if (collision) {
+            zone.classList.add('active');
+            dropText.textContent = "Ne lâche pas!";
+            
+            // Commencer à remplir
+            if (!fillInterval && progress < 100) {
+                fillInterval = setInterval(() => {
+                    progress += 2;
+                    updateProgress();
+                    
+                    if (progress >= 100) {
+                        clearInterval(fillInterval);
+                        completeDrag();
+                    }
+                }, 50);
+            }
+        } else {
+            zone.classList.remove('active');
+            dropText.textContent = "Glisse le cœur ici";
+            
+            if (fillInterval) {
+                clearInterval(fillInterval);
+                fillInterval = null;
+            }
+        }
     }
-  }, 1000);
-}
-
-function makeButtonMove() {
-  if (noButtonMoving || !isMobile()) return;
-  
-  noButtonMoving = true;
-  const button = noButton;
-  const container = button.parentElement;
-  const containerRect = container.getBoundingClientRect();
-  
-  let moves = 0;
-  const moveInterval = setInterval(() => {
-    if (moves >= 6) {
-      clearInterval(moveInterval);
-      noButtonMoving = false;
-      return;
+    
+    function updateProgress() {
+        progressBar.style.width = progress + '%';
+        fillMask.style.height = (100 - progress) + '%';
+        heartPercent.textContent = Math.min(progress, 100) + '%';
+        
+        // Changer couleur
+        const intensity = progress / 100;
+        const heartColor = `rgb(255, ${77 + intensity * 50}, ${136 + intensity * 50})`;
+        document.querySelector('.fill-heart').style.background = heartColor;
     }
     
-    const maxX = containerRect.width - button.offsetWidth - 10;
-    const maxY = containerRect.height - button.offsetHeight - 10;
+    function endDrag() {
+        isDragging = false;
+        const heart = document.getElementById('draggableHeart');
+        heart.style.cursor = 'grab';
+        heart.style.zIndex = '10';
+        
+        dropZone.classList.remove('active');
+        
+        if (fillInterval) {
+            clearInterval(fillInterval);
+            fillInterval = null;
+        }
+        
+        // Si pas complété, retourner à la position initiale
+        if (progress < 100) {
+            heart.style.transition = 'all 0.5s ease';
+            heart.style.left = initialLeft + 'px';
+            heart.style.top = '0px';
+            
+            // Réduire la progression
+            const revert = setInterval(() => {
+                if (progress > 0) {
+                    progress -= 2;
+                    updateProgress();
+                } else {
+                    clearInterval(revert);
+                    dropText.textContent = "Glisse le cœur ici";
+                }
+            }, 30);
+            
+            setTimeout(() => {
+                heart.style.transition = '';
+            }, 500);
+        }
+    }
     
-    const randomX = Math.random() * maxX;
-    const randomY = Math.random() * maxY;
+    function completeDrag() {
+        dropZone.classList.remove('active');
+        dropText.textContent = "✅ Validation complète!";
+        
+        setTimeout(() => {
+            showScreen(4);
+            createConfetti();
+        }, 1000);
+    }
+}
+
+// ===== ÉCRAN 4: FINAL =====
+document.getElementById('btnFinal').addEventListener('click', function() {
+    createConfetti();
+    this.textContent = "😊💕";
     
-    button.style.position = 'absolute';
-    button.style.left = `${randomX}px`;
-    button.style.top = `${randomY}px`;
-    
-    moves++;
-  }, 400);
-}
+    setTimeout(() => {
+        this.textContent = "Fermer les yeux et sourire 😊";
+    }, 1000);
+});
 
-function showFloatingMessage(text) {
-  floatingMessage.textContent = text;
-  floatingMessage.style.display = 'block';
-  
-  setTimeout(() => {
-    floatingMessage.style.display = 'none';
-  }, 3000);
-}
+// ===== INITIALISATION =====
+// S'assurer qu'on commence sur l'écran 1
+showScreen(1);
 
-// ========== GESTION DES SONS ==========
-function preloadAudio() {
-  // Les sons sont préchargés via preload="auto"
-}
+// Support tactile amélioré
+document.addEventListener('touchstart', function() {}, {passive: true});
 
-function playErrorSound() {
-  try {
-    errorSound.currentTime = 0;
-    errorSound.play();
-  } catch (e) {
-    console.log("Son d'erreur ignoré:", e);
-  }
-}
+// Prévenir le zoom sur mobile
+document.addEventListener('gesturestart', function(e) {
+    e.preventDefault();
+});
 
-function playClickSound() {
-  try {
-    clickSound.currentTime = 0;
-    clickSound.play
+// Message de bienvenue
+setTimeout(() => {
+    if (currentScreen === 1) {
+        const envelope = document.getElementById('envelope');
+        envelope.style.transform = 'scale(1.1)';
+        setTimeout(() => {
+            envelope.style.transform = 'scale(1)';
+        }, 500);
+    }
+}, 1000);
+</script>
+</body>
+</html>
