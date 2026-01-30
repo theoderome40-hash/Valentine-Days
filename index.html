@@ -68,6 +68,10 @@ p{margin:15px 0;font-size:1rem;color:#666}
 .volume-control{position:fixed;top:15px;right:15px;z-index:1000;background:rgba(255,255,255,0.9);border-radius:50%;width:50px;height:50px;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 10px rgba(0,0,0,0.2)}
 .volume-btn{font-size:28px;cursor:pointer;background:none;border:none;padding:0;width:100%;height:100%}
 
+/* Indicateur musique */
+.music-indicator{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(255,77,136,0.9);color:white;padding:10px 20px;border-radius:25px;font-size:0.9rem;display:none;z-index:1000}
+.music-indicator.playing{display:block}
+
 /* Responsive */
 @media (max-width: 480px){
     .card{padding:20px}
@@ -75,6 +79,7 @@ p{margin:15px 0;font-size:1rem;color:#666}
     .button{padding:16px;font-size:1.2rem}
     .envelope{font-size:70px}
     .volume-control{top:10px;right:10px;width:45px;height:45px}
+    .music-indicator{bottom:10px;font-size:0.8rem}
 }
 </style>
 </head>
@@ -83,6 +88,11 @@ p{margin:15px 0;font-size:1rem;color:#666}
 <!-- Contrôle volume -->
 <div class="volume-control">
     <button class="volume-btn" id="volumeBtn">🔊</button>
+</div>
+
+<!-- Indicateur musique -->
+<div class="music-indicator" id="musicIndicator">
+    <span id="musicStatus">🎵 Musique en cours...</span>
 </div>
 
 <!-- Écran 1: Enveloppe -->
@@ -158,8 +168,12 @@ p{margin:15px 0;font-size:1rem;color:#666}
     </p>
     
     <button class="button button-yes" id="btnFinal" style="margin-top:20px">
-        <span>🎵 Écouter notre musique</span>
+        <span id="musicBtnText">🎵 Lancer notre musique</span>
     </button>
+    
+    <p style="margin-top:15px;font-size:0.9rem;color:#999">
+        (La musique "Lovers Rock" va commencer)
+    </p>
 </div>
 
 <!-- Écran d'erreur -->
@@ -202,7 +216,20 @@ p{margin:15px 0;font-size:1rem;color:#666}
 </audio>
 
 <audio id="soundMusic" preload="auto" loop>
+    <!-- ESSAYE CES OPTIONS SI LoversRock.mp3 NE MARCHE PAS -->
+    <!-- Option 1: Ton fichier local -->
+    <source src="LoversRock.mp3" type="audio/mpeg">
+    
+    <!-- Option 2: URL alternative 1 (musique romantique similaire) -->
     <source src="https://assets.mixkit.co/music/preview/mixkit-loving-you-117.mp3" type="audio/mpeg">
+    
+    <!-- Option 3: URL alternative 2 -->
+    <source src="https://assets.mixkit.co/music/preview/mixkit-sunny-love-song-113.mp3" type="audio/mpeg">
+    
+    <!-- Option 4: URL alternative 3 -->
+    <source src="https://assets.mixkit.co/music/preview/mixkit-valentines-day-romantic-music-511.mp3" type="audio/mpeg">
+    
+    Ton navigateur ne supporte pas l'audio.
 </audio>
 
 <audio id="soundError" preload="auto">
@@ -218,6 +245,7 @@ let startX, startY;
 let errorCount = 0;
 let volumeOn = true;
 let userInteracted = false;
+let musicPlaying = false;
 
 // ===== INITIALISATION AUDIO =====
 const sounds = {
@@ -231,32 +259,91 @@ const sounds = {
     error: document.getElementById('soundError')
 };
 
-// Préparer tous les sons
+// Configurer le volume
 Object.values(sounds).forEach(sound => {
     sound.volume = 0.7;
     sound.muted = false;
+    sound.preload = 'auto';
 });
+
+// Configuration spéciale pour la musique
+sounds.music.volume = 0.5;
+sounds.music.loop = true;
 
 // ===== FONCTIONS AUDIO =====
 function playSound(soundName) {
-    if (!volumeOn || !userInteracted) return;
+    if (!volumeOn) return;
     
     try {
         const sound = sounds[soundName];
-        if (sound) {
+        if (sound && userInteracted) {
+            // Pour mobile, on doit s'assurer que c'est après une interaction
             sound.currentTime = 0;
-            sound.play().catch(e => console.log("Audio error:", e));
+            const playPromise = sound.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.catch(error => {
+                    console.log(`Audio ${soundName} error:`, error);
+                    
+                    // Sur mobile, on peut essayer de démuter
+                    if (error.name === 'NotAllowedError') {
+                        console.log("Audio bloqué par le navigateur. Attendre l'interaction utilisateur.");
+                    }
+                });
+            }
         }
     } catch (e) {
         console.log("Sound error:", e);
     }
 }
 
-function stopSound(soundName) {
-    const sound = sounds[soundName];
-    if (sound) {
-        sound.pause();
-        sound.currentTime = 0;
+function toggleMusic() {
+    if (!userInteracted) {
+        // Si pas encore d'interaction, attendre
+        document.getElementById('musicBtnText').textContent = "👆 Touche d'abord l'écran";
+        return;
+    }
+    
+    if (musicPlaying) {
+        // Arrêter la musique
+        sounds.music.pause();
+        musicPlaying = false;
+        document.getElementById('musicBtnText').textContent = "🎵 Lancer notre musique";
+        document.getElementById('musicStatus').textContent = "⏸️ Musique en pause";
+        document.getElementById('musicIndicator').classList.remove('playing');
+    } else {
+        // Démarrer la musique
+        const playPromise = sounds.music.play();
+        
+        if (playPromise !== undefined) {
+            playPromise.then(() => {
+                musicPlaying = true;
+                document.getElementById('musicBtnText').textContent = "⏸️ Pause musique";
+                document.getElementById('musicStatus').textContent = "🎵 Lovers Rock en cours...";
+                document.getElementById('musicIndicator').classList.add('playing');
+            }).catch(error => {
+                console.log("Musique error:", error);
+                
+                // Solutions pour les problèmes courants
+                if (error.name === 'NotAllowedError') {
+                    document.getElementById('musicBtnText').textContent = "🔇 Autorise l'audio";
+                    alert("Pour la musique, autorise l'audio dans ton navigateur!");
+                } else if (error.name === 'NotFoundError') {
+                    // Si LoversRock.mp3 n'est pas trouvé, essayer les alternatives
+                    console.log("Fichier LoversRock.mp3 non trouvé, essai des alternatives...");
+                    sounds.music.load(); // Recharger avec les sources alternatives
+                    
+                    // Réessayer après un délai
+                    setTimeout(() => {
+                        sounds.music.play().then(() => {
+                            musicPlaying = true;
+                            document.getElementById('musicBtnText').textContent = "⏸️ Pause musique";
+                            document.getElementById('musicIndicator').classList.add('playing');
+                        });
+                    }, 500);
+                }
+            });
+        }
     }
 }
 
@@ -265,9 +352,11 @@ function stopAllSounds() {
         sound.pause();
         sound.currentTime = 0;
     });
+    musicPlaying = false;
+    document.getElementById('musicIndicator').classList.remove('playing');
 }
 
-// Gestionnaire de volume
+// ===== GESTION VOLUME =====
 document.getElementById('volumeBtn').addEventListener('click', function() {
     volumeOn = !volumeOn;
     this.textContent = volumeOn ? '🔊' : '🔇';
@@ -282,13 +371,19 @@ function initUserInteraction() {
     if (userInteracted) return;
     
     userInteracted = true;
+    console.log("Utilisateur a interagi, audio activé!");
     
-    // Démarrer un son pour activer l'audio sur mobile
+    // Démarrer un son silencieux pour activer l'audio
+    sounds.click.volume = 0.01;
     sounds.click.play().then(() => {
         sounds.click.pause();
         sounds.click.currentTime = 0;
+        sounds.click.volume = 0.7;
+        
+        // Mettre à jour le bouton musique
+        document.getElementById('musicBtnText').textContent = "🎵 Lancer notre musique";
     }).catch(() => {
-        // Ignorer l'erreur, l'audio sera activé au prochain clic
+        // Ignorer l'erreur
     });
     
     // Supprimer les écouteurs
@@ -308,9 +403,11 @@ function showScreen(screenNumber) {
     document.getElementById('screen3').classList.add('hidden');
     document.getElementById('screen4').classList.add('hidden');
     
-    // Arrêter la musique si on quitte l'écran final
+    // Arrêter la musique si on quitte l'écran final (sauf si on y va)
     if (currentScreen === 4 && screenNumber !== 4) {
-        stopSound('music');
+        sounds.music.pause();
+        musicPlaying = false;
+        document.getElementById('musicIndicator').classList.remove('playing');
     }
     
     // Montrer l'écran demandé
@@ -346,7 +443,7 @@ document.getElementById('envelope').addEventListener('click', function() {
     }, 300);
 });
 
-// Ajouter support tactile
+// Support tactile
 document.getElementById('envelope').addEventListener('touchstart', function(e) {
     e.preventDefault();
     this.click();
@@ -368,7 +465,6 @@ document.getElementById('btnNo').addEventListener('click', function() {
     playSound('no');
     errorCount++;
     
-    // Différents effets selon le nombre de clics
     switch(errorCount) {
         case 1:
             playSound('error');
@@ -394,14 +490,12 @@ document.getElementById('btnNo').addEventListener('click', function() {
             this.style.background = "linear-gradient(135deg,#ff4d88,#ff0066)";
             this.style.color = "white";
             
-            // Auto-clic sur OUI après 1 seconde
             setTimeout(() => {
                 document.getElementById('btnYes').click();
             }, 1000);
             break;
         default:
             playSound('click');
-            // Faire bouger le bouton
             const x = Math.random() * 50 - 25;
             const y = Math.random() * 50 - 25;
             this.style.transform = `translate(${x}px, ${y}px)`;
@@ -420,7 +514,6 @@ document.getElementById('btnNo').addEventListener('click', function() {
 
 function showErrorScreen() {
     document.getElementById('errorScreen').classList.add('active');
-    playSound('error');
     
     let countdown = 3;
     const countdownEl = document.getElementById('countdown');
@@ -449,16 +542,16 @@ function initDragAndDrop() {
     
     let fillInterval;
     
-    // Position initiale du cœur
+    // Position initiale
     const heartContainer = document.querySelector('.heart-container');
     const containerRect = heartContainer.getBoundingClientRect();
-    const initialLeft = containerRect.width / 2 - 40; // 40 = moitié de la largeur du cœur
+    const initialLeft = containerRect.width / 2 - 40;
     
     heart.style.position = 'absolute';
     heart.style.left = initialLeft + 'px';
     heart.style.top = '0px';
     
-    // Sons de battement de cœur pendant le drag
+    // Sons de battement
     let heartbeatInterval;
     
     function startHeartbeat() {
@@ -475,7 +568,7 @@ function initDragAndDrop() {
         }
     }
     
-    // Gestion tactile pour mobile
+    // Événements tactiles
     heart.addEventListener('touchstart', function(e) {
         e.preventDefault();
         isDragging = true;
@@ -490,7 +583,6 @@ function initDragAndDrop() {
         startHeartbeat();
     });
     
-    // Gestion souris pour desktop
     heart.addEventListener('mousedown', function(e) {
         e.preventDefault();
         isDragging = true;
@@ -504,7 +596,7 @@ function initDragAndDrop() {
         startHeartbeat();
     });
     
-    // Mouvement tactile
+    // Mouvement
     document.addEventListener('touchmove', function(e) {
         if (!isDragging) return;
         e.preventDefault();
@@ -521,7 +613,6 @@ function initDragAndDrop() {
         checkDropZone(heart, dropZone);
     });
     
-    // Mouvement souris
     document.addEventListener('mousemove', function(e) {
         if (!isDragging) return;
         
@@ -535,7 +626,7 @@ function initDragAndDrop() {
         checkDropZone(heart, dropZone);
     });
     
-    // Fin du drag
+    // Fin
     document.addEventListener('touchend', function() {
         if (!isDragging) return;
         endDrag();
@@ -550,7 +641,6 @@ function initDragAndDrop() {
         const heartRect = heart.getBoundingClientRect();
         const zoneRect = zone.getBoundingClientRect();
         
-        // Vérifier collision
         const collision = !(
             heartRect.right < zoneRect.left ||
             heartRect.left > zoneRect.right ||
@@ -562,7 +652,6 @@ function initDragAndDrop() {
             zone.classList.add('active');
             dropText.textContent = "Ne lâche pas!";
             
-            // Commencer à remplir
             if (!fillInterval && progress < 100) {
                 fillInterval = setInterval(() => {
                     progress += 2;
@@ -590,12 +679,10 @@ function initDragAndDrop() {
         fillMask.style.height = (100 - progress) + '%';
         heartPercent.textContent = Math.min(progress, 100) + '%';
         
-        // Changer couleur
         const intensity = progress / 100;
         const heartColor = `rgb(255, ${77 + intensity * 50}, ${136 + intensity * 50})`;
         document.querySelector('.fill-heart').style.background = heartColor;
         
-        // Son de progression
         if (progress % 25 === 0 && progress > 0 && progress < 100) {
             playSound('click');
         }
@@ -615,13 +702,11 @@ function initDragAndDrop() {
             fillInterval = null;
         }
         
-        // Si pas complété, retourner à la position initiale
         if (progress < 100) {
             heart.style.transition = 'all 0.5s ease';
             heart.style.left = initialLeft + 'px';
             heart.style.top = '0px';
             
-            // Réduire la progression
             const revert = setInterval(() => {
                 if (progress > 0) {
                     progress -= 2;
@@ -647,24 +732,22 @@ function initDragAndDrop() {
         setTimeout(() => {
             showScreen(4);
             createConfetti();
-            // Démarrer la musique automatiquement à la fin
+            
+            // Démarrer la musique automatiquement après validation
             setTimeout(() => {
-                playSound('music');
-            }, 500);
+                if (userInteracted && volumeOn) {
+                    toggleMusic();
+                } else {
+                    document.getElementById('musicBtnText').textContent = "👆 Touche pour lancer la musique";
+                }
+            }, 1000);
         }, 1000);
     }
 }
 
 // ===== ÉCRAN 4: FINAL =====
 document.getElementById('btnFinal').addEventListener('click', function() {
-    if (sounds.music.paused) {
-        playSound('music');
-        this.textContent = "⏸️ Pause musique";
-        createConfetti();
-    } else {
-        stopSound('music');
-        this.textContent = "🎵 Reprendre la musique";
-    }
+    toggleMusic();
 });
 
 // Support tactile
@@ -674,47 +757,40 @@ document.getElementById('btnFinal').addEventListener('touchstart', function(e) {
 });
 
 // ===== INITIALISATION =====
-// S'assurer qu'on commence sur l'écran 1
 showScreen(1);
 
-// Support tactile amélioré
+// Support tactile
 document.addEventListener('touchstart', function() {}, {passive: true});
 
-// Prévenir le zoom sur mobile
+// Prévenir le zoom
 document.addEventListener('gesturestart', function(e) {
     e.preventDefault();
 });
 
-// Message de bienvenue
+// Message d'aide pour la musique
 setTimeout(() => {
-    if (currentScreen === 1) {
+    if (currentScreen === 1 && !userInteracted) {
         const envelope = document.getElementById('envelope');
-        envelope.style.animation = 'pulse 2s infinite';
+        envelope.style.animation = 'pulse 1s infinite';
     }
-}, 1000);
+}, 2000);
 
-// Correction pour iOS - forcer le redimensionnement
-window.addEventListener('orientationchange', function() {
-    setTimeout(() => {
-        document.body.style.height = window.innerHeight + 'px';
-    }, 100);
-});
-
-// Assurer que tout fonctionne après chargement
+// Vérification du fichier audio
 window.addEventListener('load', function() {
-    // Précharger les sons discrètement
-    sounds.click.play().then(() => {
-        sounds.click.pause();
-        sounds.click.currentTime = 0;
-    }).catch(() => {});
+    console.log("Page chargée, vérification audio...");
     
-    // Message d'aide audio
-    setTimeout(() => {
-        if (currentScreen === 1 && !userInteracted) {
-            const envelope = document.getElementById('envelope');
-            envelope.style.animation = 'pulse 1s infinite';
-        }
-    }, 2000);
+    // Tester si le fichier LoversRock.mp3 existe
+    fetch('LoversRock.mp3')
+        .then(response => {
+            if (response.ok) {
+                console.log("✅ Fichier LoversRock.mp3 trouvé!");
+            } else {
+                console.log("❌ Fichier LoversRock.mp3 non trouvé, utilisation des alternatives");
+            }
+        })
+        .catch(() => {
+            console.log("❌ Erreur de chargement de LoversRock.mp3, utilisation des alternatives");
+        });
 });
 </script>
 </body>
